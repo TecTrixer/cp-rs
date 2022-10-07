@@ -1,2 +1,4 @@
 /target
 /Cargo.lock
+test.txt
+.DS_STORE
