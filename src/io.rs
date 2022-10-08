@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{stdin, stdout, BufReader, BufWriter, Read, Stdin, Stdout, Write},
+    io::{stdin, stdout, BufReader, BufWriter, Cursor, Read, Stdin, Stdout, Write},
     str::from_utf8,
 };
 
@@ -18,7 +18,6 @@ where
     reader: BufReader<R>,
     writer: BufWriter<W>,
 }
-
 impl<R: Read, W: Write> Io<R, W> {
     /// With this function you can create a new Io instance with a custom reader and writer.
     pub fn with_reader_and_writer(reader: R, writer: W) -> Io<R, W> {
@@ -90,14 +89,30 @@ impl<R: Read, W: Write> Io<R, W> {
     pub fn vec<T: std::str::FromStr>(&mut self, n: usize) -> Vec<T> {
         (0..n).map(|_| self.read()).collect()
     }
+    /// This function reads the whole file and then returns a Vector with I/O handlers for each line.
+    pub fn line_io(&mut self) -> Vec<Io<Cursor<String>, Stdout>> {
+        let file = self.read_all();
+        file.lines()
+            .map(|line| Io::from_string(line.to_string()))
+            .collect()
+    }
+    /// This function reads the whole file and then returns a Vector with Strings for each line.
+    pub fn lines(&mut self) -> Vec<String> {
+        let file = self.read_all();
+        file.lines().map(|line| line.to_string()).collect()
+    }
     /// This function can be used to read the next string into a char array.
     pub fn chars(&mut self) -> Vec<char> {
         self.read::<String>().chars().collect()
     }
+    /// This function writes a newline character \n.
+    pub fn nl(&mut self) {
+        self.write('\n');
+    }
 }
 
 impl Io<Stdin, Stdout> {
-    /// This functions creates the default Io handler using stdin and stdout as reader and writer.
+    /// This functions creates the default I/O handler using stdin and stdout as reader and writer.
     pub fn new() -> Io<Stdin, Stdout> {
         Io {
             reader: BufReader::new(stdin()),
@@ -126,7 +141,9 @@ impl Io<File, File> {
     /// This function uses the first file for reading and the second file for writing.
     pub fn from_file_to_file(filename_in: &str, filename_out: &str) -> Io<File, File> {
         if filename_in == filename_out {
-            panic!("You cannot create an I/O handler which writes to and reads from the same file!");
+            panic!(
+                "You cannot create an I/O handler which writes to and reads from the same file!"
+            );
         }
         let reader = File::options()
             .read(true)
@@ -170,6 +187,13 @@ impl Io<&[u8], Stdout> {
     pub fn from_str(input: &str) -> Io<&[u8], Stdout> {
         Io {
             reader: BufReader::new(input.as_bytes()),
+            writer: BufWriter::new(stdout()),
+        }
+    }
+    /// This function creates an io handler from a String which can be used to parse lines easier.
+    pub fn from_string(input: String) -> Io<Cursor<String>, Stdout> {
+        Io {
+            reader: BufReader::new(Cursor::new(input)),
             writer: BufWriter::new(stdout()),
         }
     }
