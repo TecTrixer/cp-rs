@@ -4,4 +4,3 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-easy_io = "0.3.0"
