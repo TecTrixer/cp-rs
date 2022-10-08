@@ -1,7 +1,6 @@
-/// This module contains all IO related helper utilities
+/// This module contains all I/O related helper utilities
 ///
-/// Most important are the InRead and the OutWrite structs imported from the easy\_io crate. They
-/// can be used to write / read from / to a file or standard in-/output.
+/// # Example:
 ///
 /// ```no_run
 /// use cp_rs::io::*;
@@ -12,11 +11,31 @@
 ///
 pub mod io;
 
+/// This module contains all sorts of utilities which can be helpful for competitive programming.
+///
+/// For example, with the radix function you can convert positive numbers into Strings with a given
+/// radix.
+///
+/// ```
+/// use cp_rs::utils::radix;
+/// let num = 5;
+/// let string_base2 = format!("{}", radix(num, 2));
+/// assert_eq!(string_base2, "101")
+/// ```
+pub mod utils;
+
 #[cfg(test)]
 mod tests {
     mod io {
         #[test]
         fn playground() {
+            use crate::io::*;
+            // use std::io::*;
+            let s = "5, 4, 3, 2, 1";
+            let mut io = Io::from_str(s);
+            let a: usize = io.read();
+            io.write(a);
         }
     }
+
 }
