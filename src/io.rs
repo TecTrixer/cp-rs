@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{stdin, stdout, BufWriter, Read, Stdin, Stdout, Write},
+    io::{stdin, stdout, BufReader, BufWriter, Read, Stdin, Stdout, Write},
     str::from_utf8_unchecked,
 };
 
@@ -10,8 +10,12 @@ use std::{
 ///
 /// Io is not safe! It is only intended to be used for competitive programming
 /// and hence often uses unwrap.
-pub struct Io<R, W: Write> {
-    reader: R,
+pub struct Io<R, W>
+where
+    R: Read,
+    W: Write,
+{
+    reader: BufReader<R>,
     writer: BufWriter<W>,
 }
 
@@ -19,7 +23,7 @@ impl<R: Read, W: Write> Io<R, W> {
     /// With this function you can create a new Io instance with a custom reader and writer.
     pub fn with_reader_and_writer(reader: R, writer: W) -> Io<R, W> {
         Io {
-            reader,
+            reader: BufReader::new(reader),
             writer: BufWriter::new(writer),
         }
     }
@@ -87,7 +91,7 @@ impl Io<Stdin, Stdout> {
     /// This functions creates the default Io handler using stdin and stdout as reader and writer.
     pub fn new() -> Io<Stdin, Stdout> {
         Io {
-            reader: stdin(),
+            reader: BufReader::new(stdin()),
             writer: BufWriter::new(stdout()),
         }
     }
@@ -95,12 +99,14 @@ impl Io<Stdin, Stdout> {
 impl Io<File, Stdout> {
     /// This function uses the given file as input and stdout as output.
     pub fn from_file(filename: &str) -> Io<File, Stdout> {
-        let reader = File::options()
-            .read(true)
-            .write(true)
-            .create(true)
-            .open(filename)
-            .unwrap();
+        let reader = BufReader::new(
+            File::options()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(filename)
+                .unwrap(),
+        );
         Io {
             reader,
             writer: BufWriter::new(stdout()),
@@ -126,7 +132,7 @@ impl Io<File, File> {
             .open(filename_out)
             .unwrap();
         Io {
-            reader,
+            reader: BufReader::new(reader),
             writer: BufWriter::new(writer),
         }
     }
@@ -144,7 +150,7 @@ impl Io<Stdin, File> {
                 .unwrap(),
         );
         Io {
-            reader: stdin(),
+            reader: BufReader::new(stdin()),
             writer,
         }
     }
