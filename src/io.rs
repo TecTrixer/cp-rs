@@ -1,15 +1,15 @@
 use std::{
     fs::File,
     io::{stdin, stdout, BufReader, BufWriter, Read, Stdin, Stdout, Write},
-    str::from_utf8_unchecked,
+    str::from_utf8,
 };
 
-/// This struct provides a layer of abstraction over all IO operations for you.
+/// This struct provides a layer of abstraction over all I/O operations for you.
 ///
 /// You can construct it with a custom reader and writer, the cli or with a file.
 ///
 /// Io is not safe! It is only intended to be used for competitive programming
-/// and hence often uses unwrap.
+/// and hence often uses expect.
 pub struct Io<R, W>
 where
     R: Read,
@@ -30,10 +30,14 @@ impl<R: Read, W: Write> Io<R, W> {
     /// Use this function to write to the previously given output writer. The output will be
     /// buffered to make it faster.
     pub fn write<S: ToString>(&mut self, s: S) {
-        self.writer.write_all(s.to_string().as_bytes()).unwrap();
+        self.writer
+            .write_all(s.to_string().as_bytes())
+            .expect("could not write to I/O output buffer");
     }
     pub fn flush(&mut self) {
-        self.writer.flush().unwrap();
+        self.writer
+            .flush()
+            .expect("could not flush I/O output buffer");
     }
     /// This function can be used to read in any given type of variable. It will automatically
     /// ignore spaces, commas, newlines and tabs and will try to convert the next tokens into the specified
@@ -43,21 +47,24 @@ impl<R: Read, W: Write> Io<R, W> {
             .reader
             .by_ref()
             .bytes()
-            .map(|b| b.unwrap())
+            .map(|b| b.expect("could not read bytes in io read operation"))
             .skip_while(|&b| b == b' ' || b == b'\n' || b == b'\r' || b == b'\t' || b == b',')
             .take_while(|&b| b != b' ' && b != b'\n' && b != b'\r' && b != b'\t' && b != b',')
             .collect::<Vec<_>>();
-        unsafe { from_utf8_unchecked(&buf) }
+        from_utf8(&buf)
+            .expect("data was not valid UTF-8 and could not be converted to a String")
             .parse()
             .ok()
-            .expect("Parse error.")
+            .expect("parse error")
     }
     /// This function reads the entire contents in the reader to a String to be used outside of the
-    /// IO helper. Note that it will ignore whitespaces and other characters and will keep on
+    /// I/O helper. Note that it will ignore whitespaces and other characters and will keep on
     /// reading until it reaches EOF.
     pub fn read_all(&mut self) -> String {
         let mut res = String::new();
-        self.reader.read_to_string(&mut res).unwrap();
+        self.reader
+            .read_to_string(&mut res)
+            .expect("data was not valid UTF-8 and could not be converted to a String");
         res
     }
     /// This function reads the next line into a String. It only checks for \n and \r.
@@ -66,10 +73,12 @@ impl<R: Read, W: Write> Io<R, W> {
             .reader
             .by_ref()
             .bytes()
-            .map(|b| b.unwrap())
+            .map(|b| b.expect("could not read bytes in io read operation"))
             .take_while(|&b| b != b'\n' && b != b'\r')
             .collect::<Vec<_>>();
-        unsafe { from_utf8_unchecked(&buf).to_owned() }
+        from_utf8(&buf)
+            .expect("data was not valid UTF-8 and could not be converted to a String")
+            .to_owned()
     }
     /// This function can be used to read indexes which are 1-based. It will subtract 1 and convert
     /// them into usize which can be used with Vectors.
@@ -117,7 +126,7 @@ impl Io<File, File> {
     /// This function uses the first file for reading and the second file for writing.
     pub fn from_file_to_file(filename_in: &str, filename_out: &str) -> Io<File, File> {
         if filename_in == filename_out {
-            panic!("You cannot create an IO handler which writes to and reads from the same file!");
+            panic!("You cannot create an I/O handler which writes to and reads from the same file!");
         }
         let reader = File::options()
             .read(true)
@@ -152,6 +161,16 @@ impl Io<Stdin, File> {
         Io {
             reader: BufReader::new(stdin()),
             writer,
+        }
+    }
+}
+
+impl Io<&[u8], Stdout> {
+    /// This function creates an io handler from a &str which can be used to make parsing easier.
+    pub fn from_str(input: &str) -> Io<&[u8], Stdout> {
+        Io {
+            reader: BufReader::new(input.as_bytes()),
+            writer: BufWriter::new(stdout()),
         }
     }
 }
