@@ -3,6 +3,7 @@ use std::{
     io::{stdin, stdout, BufReader, BufWriter, Cursor, Read, Stdin, Stdout, Write},
     str::from_utf8,
 };
+use regex::Regex;
 
 /// This struct provides a layer of abstraction over all I/O operations for you.
 ///
@@ -129,6 +130,13 @@ impl<R: Read, W: Write> Io<R, W> {
     /// This function writes a newline character \n.
     pub fn nl(&mut self) {
         self.write('\n');
+    }
+    /// This function reads the whole file and then returns all numbers matching the regex r'-?\d+'
+    /// as a vector.
+    pub fn nums<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self) -> Vec<T> {
+        let file = self.read_all();
+        let re = Regex::new(r"(-?\d+)").unwrap();
+        re.captures_iter(&file).map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap()).collect::<Vec<T>>()
     }
 }
 
