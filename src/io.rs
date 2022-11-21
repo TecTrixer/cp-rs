@@ -148,7 +148,6 @@ impl Io<File, Stdout> {
             File::options()
                 .read(true)
                 .write(true)
-                .create(true)
                 .open(filename)
                 .unwrap(),
         );
