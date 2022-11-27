@@ -6,7 +6,7 @@ authors = ["TecTrixer <tonihoevedes@gmail.com>"]
 license = "MIT"
 description = "Competitive programming library, especially for AoC"
 repository = "https://github.com/tectrixer/cp-rs"
-keywords = ["competitive-programming", "io", "input-handling", "algorithms"]
+keywords = ["competitive", "io", "input-handling", "algorithms"]
 
 [dependencies]
 radix_fmt = "1.0.0"
