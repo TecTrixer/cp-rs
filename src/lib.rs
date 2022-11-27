@@ -19,7 +19,7 @@ pub mod io;
 /// ```
 /// use cp_rs::utils::radix;
 /// let num = 5;
-/// let string_base2 = format!("{}", radix(num, 2));
+/// let string_base2 = radix(num, 2).to_string();
 /// assert_eq!(string_base2, "101")
 /// ```
 pub mod utils;
