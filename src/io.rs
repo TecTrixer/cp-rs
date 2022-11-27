@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::{
     fs::File,
     io::{stdin, stdout, BufReader, BufWriter, Cursor, Read, Stdin, Stdout, Write},
@@ -10,6 +11,7 @@ use std::{
 ///
 /// Io is not safe! It is only intended to be used for competitive programming
 /// and hence often uses expect.
+#[derive(Debug)]
 pub struct Io<R, W>
 where
     R: Read,
@@ -33,6 +35,31 @@ impl<R: Read, W: Write> Io<R, W> {
             .write_all(s.to_string().as_bytes())
             .expect("could not write to I/O output buffer");
     }
+    /// Use this function to write to the previously given output writer. The output will be
+    /// flushed and a newline character will be appended.
+    pub fn writeln<S: ToString>(&mut self, s: S) {
+        self.write(s);
+        self.nl();
+        self.flush();
+    }
+    /// Use this function to write to the previously given output writer, when the content you want
+    /// to print only has the Debug trait and not the ToString / Display trait. The output will be
+    /// buffered to make it faster.
+    pub fn writed<S: std::fmt::Debug>(&mut self, s: S) {
+        self.writer
+            .write_fmt(format_args!("{:?}", s))
+            .expect("could not write to I/O output buffer");
+    }
+    /// Use this function to write to the previously given output writer, when the content you want
+    /// to print only has the Debug trait and not the ToString / Display trait. The output will be
+    /// flushed and a newline character will be appended.
+    pub fn writedln<S: std::fmt::Debug>(&mut self, s: S) {
+        self.writed(s);
+        self.nl();
+        self.flush();
+    }
+    /// This function flushes the output. Do not call this function often inside of a loop as that
+    /// will lead to bad performance.
     pub fn flush(&mut self) {
         self.writer
             .flush()
@@ -41,7 +68,7 @@ impl<R: Read, W: Write> Io<R, W> {
     /// This function can be used to read in any given type of variable. It will automatically
     /// ignore spaces, commas, newlines and tabs and will try to convert the next tokens into the specified
     /// type. It uses unwrap and is therefore unsafe.
-    pub fn read<T: std::str::FromStr>(&mut self) -> T {
+    pub fn read<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self) -> T {
         let buf = self
             .reader
             .by_ref()
@@ -53,8 +80,7 @@ impl<R: Read, W: Write> Io<R, W> {
         from_utf8(&buf)
             .expect("data was not valid UTF-8 and could not be converted to a String")
             .parse()
-            .ok()
-            .expect("parse error")
+            .unwrap()
     }
     /// This function reads the entire contents in the reader to a String to be used outside of the
     /// I/O helper. Note that it will ignore whitespaces and other characters and will keep on
@@ -79,6 +105,16 @@ impl<R: Read, W: Write> Io<R, W> {
             .expect("data was not valid UTF-8 and could not be converted to a String")
             .to_owned()
     }
+    /// This function can be used to read a single char.
+    pub fn read_char(&mut self) -> char {
+        self.reader
+            .by_ref()
+            .bytes()
+            .map(|b| b.expect("could not read bytes in io read operation"))
+            .skip_while(|&b| b == b' ' || b == b'\n' || b == b'\r' || b == b'\t' || b == b',')
+            .next()
+            .unwrap() as char
+    }
     /// This function can be used to read indexes which are 1-based. It will subtract 1 and convert
     /// them into usize which can be used with Vectors.
     pub fn idx(&mut self) -> usize {
@@ -86,15 +122,16 @@ impl<R: Read, W: Write> Io<R, W> {
     }
     /// This function can be used to read a Vector. It will read tokens of the given type *n*
     /// times.
-    pub fn vec<T: std::str::FromStr>(&mut self, n: usize) -> Vec<T> {
-        (0..n).map(|_| self.read()).collect()
+    pub fn vec<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self, n: usize) -> Vec<T> {
+        (0..n).map(|_| self.read::<T>()).collect()
     }
     /// This function reads the whole file and then returns a Vector with I/O handlers for each line.
-    pub fn line_io(&mut self) -> Vec<Io<Cursor<String>, Stdout>> {
+    pub fn line_io(&mut self) -> impl std::iter::Iterator<Item = Io<Cursor<String>, Stdout>> {
         let file = self.read_all();
         file.lines()
-            .map(|line| Io::from_string(line.to_string()))
-            .collect()
+            .map(move |line| Io::from_string(line.to_string()))
+            .collect::<Vec<Io<Cursor<String>, Stdout>>>()
+            .into_iter()
     }
     /// This function reads the whole file and then returns a Vector with Strings for each line.
     pub fn lines(&mut self) -> Vec<String> {
@@ -108,6 +145,15 @@ impl<R: Read, W: Write> Io<R, W> {
     /// This function writes a newline character \n.
     pub fn nl(&mut self) {
         self.write('\n');
+    }
+    /// This function reads the whole file and then returns all numbers matching the regex r'-?\d+'
+    /// as a vector.
+    pub fn nums<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self) -> Vec<T> {
+        let file = self.read_all();
+        let re = Regex::new(r"(-?\d+)").unwrap();
+        re.captures_iter(&file)
+            .map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap())
+            .collect::<Vec<T>>()
     }
 }
 
@@ -127,7 +173,6 @@ impl Io<File, Stdout> {
             File::options()
                 .read(true)
                 .write(true)
-                .create(true)
                 .open(filename)
                 .unwrap(),
         );
