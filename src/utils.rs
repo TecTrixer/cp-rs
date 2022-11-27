@@ -3,3 +3,6 @@
 ///
 /// For conversion from a string to a number you can use $type::from_str_radix.
 pub use radix_fmt::radix;
+
+/// Makes it possible to compute the md5 hash
+pub use md5;

@@ -1,9 +1,9 @@
+use regex::Regex;
 use std::{
     fs::File,
     io::{stdin, stdout, BufReader, BufWriter, Cursor, Read, Stdin, Stdout, Write},
     str::from_utf8,
 };
-use regex::Regex;
 
 /// This struct provides a layer of abstraction over all I/O operations for you.
 ///
@@ -39,7 +39,23 @@ impl<R: Read, W: Write> Io<R, W> {
     /// flushed and a newline character will be appended.
     pub fn writeln<S: ToString>(&mut self, s: S) {
         self.write(s);
-        self.write('\n');
+        self.nl();
+        self.flush();
+    }
+    /// Use this function to write to the previously given output writer, when the content you want
+    /// to print only has the Debug trait and not the ToString / Display trait. The output will be
+    /// buffered to make it faster.
+    pub fn writed<S: std::fmt::Debug>(&mut self, s: S) {
+        self.writer
+            .write_fmt(format_args!("{:?}", s))
+            .expect("could not write to I/O output buffer");
+    }
+    /// Use this function to write to the previously given output writer, when the content you want
+    /// to print only has the Debug trait and not the ToString / Display trait. The output will be
+    /// flushed and a newline character will be appended.
+    pub fn writedln<S: std::fmt::Debug>(&mut self, s: S) {
+        self.writed(s);
+        self.nl();
         self.flush();
     }
     /// This function flushes the output. Do not call this function often inside of a loop as that
@@ -52,8 +68,7 @@ impl<R: Read, W: Write> Io<R, W> {
     /// This function can be used to read in any given type of variable. It will automatically
     /// ignore spaces, commas, newlines and tabs and will try to convert the next tokens into the specified
     /// type. It uses unwrap and is therefore unsafe.
-    pub fn read<T: std::str::FromStr<Err = impl std::fmt::Debug>> (&mut self) -> T
-    {
+    pub fn read<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self) -> T {
         let buf = self
             .reader
             .by_ref()
@@ -107,7 +122,7 @@ impl<R: Read, W: Write> Io<R, W> {
     }
     /// This function can be used to read a Vector. It will read tokens of the given type *n*
     /// times.
-    pub fn vec<T: std::str::FromStr<Err = impl std::fmt::Debug>> (&mut self, n: usize) -> Vec<T> {
+    pub fn vec<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self, n: usize) -> Vec<T> {
         (0..n).map(|_| self.read::<T>()).collect()
     }
     /// This function reads the whole file and then returns a Vector with I/O handlers for each line.
@@ -136,7 +151,9 @@ impl<R: Read, W: Write> Io<R, W> {
     pub fn nums<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self) -> Vec<T> {
         let file = self.read_all();
         let re = Regex::new(r"(-?\d+)").unwrap();
-        re.captures_iter(&file).map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap()).collect::<Vec<T>>()
+        re.captures_iter(&file)
+            .map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap())
+            .collect::<Vec<T>>()
     }
 }
 
