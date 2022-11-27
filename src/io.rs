@@ -414,6 +414,8 @@ impl Io<&[u8], Stdout> {
     }
 }
 
+/// Trait automatically implemented for Io struct which allows to get tuples with only one function
+/// call.
 pub trait Tuple<T> {
     /// With this function, you can read multiple elements into a tuple:
     /// ```
