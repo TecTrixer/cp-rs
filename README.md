@@ -11,7 +11,7 @@ To read an integer and a float from each line in a file `input.txt` you can writ
 use cp_rs::io::*;
 
 fn main() {
-    let mut io = Io::from_file('input.txt');
+    let mut io = Io::from_file("input.txt");
     for mut line in io.line_io() {
         let (a, b): (u32, f32) = line.tuple();
     }
