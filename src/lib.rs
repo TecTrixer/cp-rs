@@ -12,17 +12,10 @@
 pub mod io;
 
 /// This module contains all sorts of utilities which can be helpful for competitive programming.
-///
-/// For example, with the radix function you can convert positive numbers into Strings with a given
-/// radix.
-///
-/// ```
-/// use cp_rs::utils::radix;
-/// let num = 5;
-/// let string_base2 = radix(num, 2).to_string();
-/// assert_eq!(string_base2, "101")
-/// ```
 pub mod utils;
+
+/// This module contains geometry related structs (Point2D, Segment, ...) and methods for them
+pub mod geometry;
 
 #[cfg(test)]
 mod tests {

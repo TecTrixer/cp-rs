@@ -1,6 +1,6 @@
 [package]
 name = "cp-rs"
-version = "0.2.3"
+version = "0.3.0"
 edition = "2021"
 authors = ["TecTrixer <tonihoevedes@gmail.com>"]
 license = "MIT"
@@ -13,4 +13,6 @@ keywords = ["competitive", "io", "input-handling", "algorithms"]
 radix_fmt = "1.0.0"
 regex = "1"
 md5 = "0.7.0"
+cached = "0.40.0"
+rug = "1.18.0"
 
