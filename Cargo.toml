@@ -13,4 +13,5 @@ keywords = ["competitive", "io", "input-handling", "algorithms"]
 radix_fmt = "1.0.0"
 regex = "1"
 md5 = "0.7.0"
+cached = "0.40.0"
 
