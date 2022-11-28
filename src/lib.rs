@@ -37,5 +37,4 @@ mod tests {
             io.write(a);
         }
     }
-
 }
