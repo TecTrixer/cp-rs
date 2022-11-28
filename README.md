@@ -22,6 +22,7 @@ fn main() {
 
 - [x] General I/O handler
 - [x] Utility for radix changes (will be reworked and put in the math module)
+- [x] Utility for memoization
 - [ ] Utility for cryptographic functions
 - [ ] Utility for arbitrary precition ints + floats
 - [ ] Utility for random numbers
