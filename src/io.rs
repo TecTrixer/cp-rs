@@ -20,6 +20,7 @@ where
     reader: BufReader<R>,
     writer: BufWriter<W>,
 }
+
 impl<R: Read, W: Write> Io<R, W> {
     /// With this function you can create a new Io instance with a custom reader and writer.
     pub fn with_reader_and_writer(reader: R, writer: W) -> Io<R, W> {
@@ -202,8 +203,7 @@ impl<R: Read, W: Write> Io<R, W> {
             .by_ref()
             .bytes()
             .map(|b| b.expect("could not read bytes in io read operation"))
-            .skip_while(|&b| b == b' ' || b == b'\n' || b == b'\r' || b == b'\t' || b == b',')
-            .next()
+            .find(|&b| b != b' ' && b != b'\n' && b != b'\r' && b != b'\t' && b != b',')
             .unwrap() as char
     }
     /// This function can be used to read indexes which are 1-based. It will subtract 1 and convert
@@ -336,6 +336,14 @@ impl Io<Stdin, Stdout> {
         }
     }
 }
+
+impl Default for Io<Stdin, Stdout> {
+    /// This implements the default trait, in case someone wants to use it.
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Io<File, Stdout> {
     /// This function uses the given file as input and stdout as output.
     pub fn from_file(filename: &str) -> Io<File, Stdout> {
@@ -352,6 +360,7 @@ impl Io<File, Stdout> {
         }
     }
 }
+
 impl Io<File, File> {
     /// This function uses the first file for reading and the second file for writing.
     pub fn from_file_to_file(filename_in: &str, filename_out: &str) -> Io<File, File> {
@@ -398,6 +407,7 @@ impl Io<Stdin, File> {
 }
 
 impl Io<&[u8], Stdout> {
+    #[allow(clippy::should_implement_trait)]
     /// This function creates an io handler from a &str which can be used to make parsing easier.
     pub fn from_str(input: &str) -> Io<&[u8], Stdout> {
         Io {
