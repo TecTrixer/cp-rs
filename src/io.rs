@@ -236,7 +236,7 @@ impl<R: Read, W: Write> Io<R, W> {
     pub fn vec<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self, n: usize) -> Vec<T> {
         (0..n).map(|_| self.read::<T>()).collect()
     }
-    /// This function reads the whole file and then returns a Vector with I/O handlers for each line.
+    /// This function reads the whole file and then returns an Iterator with I/O handlers for each line.
     ///
     /// # Example
     ///
@@ -255,6 +255,26 @@ impl<R: Read, W: Write> Io<R, W> {
             .map(move |line| Io::from_string(line.to_string()))
             .collect::<Vec<Io<Cursor<String>, Stdout>>>()
             .into_iter()
+    }
+    /// This function reads the whole file and then returns a Vector with I/O handlers for every
+    /// continuous block without empty lines.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use crate::cp_rs::io::*;
+    /// let mut io = Io::from_str("1\n2\n\n3\n4");
+    /// let mut blocks = io.blocks();
+    /// let first_sum: usize = blocks[0].nums::<usize>().iter().sum();
+    /// assert!(first_sum == 1 + 2);
+    /// let second_sum: usize = blocks[1].nums::<usize>().iter().sum();
+    /// assert!(second_sum == 3 + 4);
+    /// ```
+    pub fn blocks(&mut self) -> Vec<Io<Cursor<String>, Stdout>> {
+        let file = self.read_all();
+        file.split("\n\n")
+            .map(move |line| Io::from_string(line.to_string()))
+            .collect::<Vec<Io<Cursor<String>, Stdout>>>()
     }
     /// This function reads the whole file and then returns a Vector with Strings for each line.
     ///
