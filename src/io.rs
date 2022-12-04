@@ -345,6 +345,24 @@ impl<R: Read, W: Write> Io<R, W> {
             .map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap())
             .collect::<Vec<T>>()
     }
+    /// This function reads the whole file and then returns all numbers matching the regex r'\d+'
+    /// as a vector (all numbers as their positive).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use crate::cp_rs::io::*;
+    /// let mut io = Io::from_str("a: 12, b: -1 and d = 2");
+    /// let nums = io.pnums::<usize>();
+    /// assert_eq!(nums, vec![12, 1, 2]);
+    /// ```
+    pub fn pnums<T: std::str::FromStr<Err = impl std::fmt::Debug>>(&mut self) -> Vec<T> {
+        let file = self.read_all();
+        let re = Regex::new(r"(\d+)").unwrap();
+        re.captures_iter(&file)
+            .map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap())
+            .collect::<Vec<T>>()
+    }
 }
 
 impl Io<Stdin, Stdout> {
