@@ -363,6 +363,36 @@ impl<R: Read, W: Write> Io<R, W> {
             .map(|x| x.get(1).unwrap().as_str().parse::<T>().unwrap())
             .collect::<Vec<T>>()
     }
+    /// This function skips one string which would be read.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use crate::cp_rs::io::*;
+    /// let mut io = Io::from_str("foo bar");
+    /// io.skip();
+    /// let word: String = io.read();
+    /// assert!(word == String::from("bar"));
+    /// ```
+    pub fn skip(&mut self) {
+        let _ = self.read::<String>();
+    }
+    /// This function skips n strings which would be read.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use crate::cp_rs::io::*;
+    /// let mut io = Io::from_str("foo bar foo");
+    /// io.skipn(2);
+    /// let word: String = io.read();
+    /// assert!(word == String::from("foo"));
+    /// ```
+    pub fn skipn(&mut self, num: usize) {
+        for _ in 0..num {
+            let _ = self.read::<String>();
+        }
+    }
 }
 
 impl Io<Stdin, Stdout> {
@@ -388,7 +418,7 @@ impl Io<File, Stdout> {
         let reader = BufReader::new(
             File::options()
                 .read(true)
-                .write(true)
+                .write(false)
                 .open(filename)
                 .unwrap(),
         );

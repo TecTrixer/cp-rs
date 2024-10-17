@@ -9,7 +9,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, S
 /// assert!(p.x == 4);
 /// assert!(p.y == 6);
 /// ```
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Hash, Clone, Copy, PartialEq, Eq)]
 pub struct Point2D<T> {
     pub x: T,
     pub y: T,
